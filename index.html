@@ -1,20 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dino Game</title>
-<link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mellstroy Run</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+<header>
+    <div class="header-content">
+        <h1>Mellstroy Run</h1>
+    </div>
+</header>
+
 <div id="gameWindow">
-  <div id="dino"></div>
+    <div id="scoreContainer">
+        <h4>Score: <span id="score">0</span></h4>
+    </div>
+	<div id="resultDisplay" style="display: none;"></div>
+	<div id="startButtonContainer">
+		<button id="startButton">Начать игру</button>
+	</div>
+    <img id="dino" src="images/mell.png" alt="Dinosaur">
 </div>
-<div id="score">0</div>
-<div id="startButtonContainer">
-  <button id="startButton">Начать игру</button>
-</div>
+
+
+<footer>
+    <div class="footer-content">
+        <p>&copy; 2024 Mellstroy Games</p>
+    </div>
+</footer>
 
 <script src="game.js"></script>
 

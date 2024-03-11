@@ -1,32 +1,99 @@
 body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    flex-direction: column;
+    min-height: 100vh; /* Заполнение высоты экрана */
     margin: 0;
+    padding: 0;
   }
+
+/* Стили для header */
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 0;
+    text-align: center;
+}
+
+/* Стили для footer */
+footer {
+    background-color: #333;
+    color: #fff;
+    padding: 5px 0;
+    text-align: center;
+    margin-top: auto; /* Расположение внизу */
+}
+
+
+.header-content {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.footer-content {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
   
-  #gameWindow {
-    width: 400px;
-    height: 200px;
-    border: 1px solid black;
+#gameWindow {
     position: relative;
-  }
-  
-  #dino {
+    width: 600px;
+    height: 400px;
+    background-color: #ffffff;
+    margin: 50px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#dino {
     position: absolute;
     bottom: 0;
-    left: 20px;
-    width: 40px;
-    height: 40px;
-    background-color: green;
-  }
-  
-  .obstacle {
+    left: 80px; /* Располагаем по центру по горизонтали */
+    transform: translateX(-50%); /* Корректируем положение по горизонтали */
+    width: 60px; /* Изменяем размер изображения динозавра */
+}
+
+
+.obstacle {
     position: absolute;
-    bottom: 0;
-    width: 20px;
-    height: 15px;
-    background-color: red;
-  }
-  
+    bottom: 0; /* Размещаем препятствие внизу игрового окна */
+}
+
+#scoreContainer {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+#startButtonContainer {
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+#startButton {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #4caf50;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#startButton:hover {
+    background-color: #45a049;  
+}

@@ -1,23 +1,33 @@
 const gameWindow = document.getElementById('gameWindow');
 const dino = document.getElementById('dino');
 const scoreDisplay = document.getElementById('score');
+const startButtonContainer = document.getElementById('startButtonContainer');
 
 let jumping = false;
-let gravity = 0.6;
+let gravity = 0.3;
 let dinoBottom = 0;
-let dinoHeight = 20; // Уменьшаем высоту хитбокса динозавра
 let obstacles = [];
 let interval;
+let obstacleInterval; // Добавляем переменную для интервала генерации препятствий
 let score = 0; // Инициализируем счетчик
+let generatingObstacles; // Переменная для отслеживания генерации препятствий
 
 function startGame() {
-  interval = setInterval(() => {
-    moveDino();
-    moveObstacles();
-    checkCollision();
-  }, 20);
-  setInterval(createObstacle, 2000);
+    generatingObstacles = true;
+    document.getElementById('resultDisplay').style.display = 'none';
+    interval = setInterval(() => {
+      moveDino();
+      moveObstacles(); // Изменяем вызов функции
+      checkCollision();
+    }, 20);
+  
+    obstacleInterval = setInterval(() => {
+      if (generatingObstacles) {
+        createObstacle();
+      }
+    }, 1800); // Запускаем интервал генерации препятствий
 }
+  
 
 function moveDino() {
   if (jumping) return;
@@ -32,9 +42,9 @@ function jump() {
   jumping = true;
   if (dinoBottom === 0) {
     let jumpInterval = setInterval(() => {
-      if (dinoBottom >= 120) {
+      if (dinoBottom >= 180) {
         clearInterval(jumpInterval);
-        let fallSpeed = 4;
+        let fallSpeed = 2;
         let fallInterval = setInterval(() => {
           if (dinoBottom <= 0) {
             clearInterval(fallInterval);
@@ -49,9 +59,9 @@ function jump() {
             }
             dino.style.bottom = dinoBottom + 'px';
           }
-        }, 30);
+        }, 25);
       } else {
-        dinoBottom += 8;
+        dinoBottom += 7;
         dino.style.bottom = dinoBottom + 'px';
       }
     }, 20);
@@ -59,63 +69,124 @@ function jump() {
 }
 
 function moveObstacles() {
-  obstacles.forEach(obstacle => {
-    const currentLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
-    if (currentLeft > 0) {
-      obstacle.style.left = (currentLeft - 5) + 'px';
-    } else {
-      obstacle.parentNode.removeChild(obstacle);
-    }
-  });
+    obstacles.forEach(obstacle => {
+        moveObstacle(obstacle); // Вызываем moveObstacle для каждого препятствия
+    });
 }
 
+function moveObstacle(obstacle) {
+    if (!gameWindow.contains(obstacle)) return; // Добавляем проверку на существование препятствия
+    if (!obstacle.moveInterval) { // Проверяем, есть ли уже у препятствия интервал перемещения
+        obstacle.moveInterval = setInterval(() => {
+            const currentLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
+            if (currentLeft > 0) {
+                obstacle.style.left = (currentLeft - 2.3) + 'px'; // Перемещаем препятствие влево
+            } else {
+                clearInterval(obstacle.moveInterval); // Очищаем интервал перемещения препятствия
+                if (gameWindow.contains(obstacle)) { // Проверяем, содержится ли препятствие в игровом окне
+                    obstacle.parentNode.removeChild(obstacle); // Удаляем препятствие
+                    obstacles.splice(obstacles.indexOf(obstacle), 1);
+                    incrementScore(); // Увеличиваем счетчик при преодолении препятствия
+                }
+            }
+        }, 10); // Изменяем интервал на 100 миллисекунд
+    }
+}
+
+
+const obstacleImages = ["images/obstacle1.png", "images/obstacle2.png"];
+
 function createObstacle() {
-  const obstacle = document.createElement('div');
+  const obstacle = document.createElement('img');
   obstacle.classList.add('obstacle');
-  obstacle.style.left = '400px';
-  const maxHeight = 30; // Максимальная высота препятствия
-  const randomHeight = Math.random() * maxHeight + 20;
-  obstacle.style.height = randomHeight + 'px';
+  obstacle.style.left = '600px';
+
+  // Выбираем случайное изображение из массива
+  const randomIndex = Math.floor(Math.random() * obstacleImages.length);
+  const imagePath = obstacleImages[randomIndex];
+
+  // Загружаем изображение, чтобы получить его размеры
+  const tempImg = new Image();
+  tempImg.src = imagePath;
+  tempImg.onload = function() {
+    obstacle.style.height = tempImg.height + 'px'; // Устанавливаем высоту изображения
+    obstacle.style.width = tempImg.width + 'px'; // Устанавливаем ширину изображения
+  };
+
+  obstacle.src = imagePath; // Устанавливаем путь к изображению
+
   gameWindow.appendChild(obstacle);
   obstacles.push(obstacle);
 
   console.log("Created obstacle:", obstacle);
 
-  let obstacleMoveInterval = setInterval(() => {
-    const currentLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
-    if (currentLeft > 0) {
-      obstacle.style.left = (currentLeft - 2) + 'px'; // Скорость перемещения препятствий
-    } else {
-      obstacle.parentNode.removeChild(obstacle);
-      clearInterval(obstacleMoveInterval);
-      obstacles.splice(obstacles.indexOf(obstacle), 1);
-      incrementScore(); // Увеличиваем счетчик при преодолении препятствия
-    }
-  }, 20);
+//   obstacleMoveInterval = setInterval(() => {
+//     const currentLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue('left'));
+    
+//     if (currentLeft > 0) {
+//       obstacle.style.left = (currentLeft - 2) + 'px'; // Скорость перемещения препятствий
+//     } else {
+//       obstacle.parentNode.removeChild(obstacle);
+//       clearInterval(obstacleMoveInterval);
+//       obstacles.splice(obstacles.indexOf(obstacle), 1);
+//       incrementScore(); // Увеличиваем счетчик при преодолении препятствия
+//     }
+//   }, 10);
 }
 
+
 function checkCollision() {
-  const dinoRect = dino.getBoundingClientRect();
-  obstacles.forEach(obstacle => {
-    const obstacleRect = obstacle.getBoundingClientRect();
-    if (
-      dinoRect.bottom >= obstacleRect.top &&
-      dinoRect.top <= obstacleRect.bottom &&
-      dinoRect.right >= obstacleRect.left &&
-      dinoRect.left <= obstacleRect.right
-    ) {
-      clearInterval(interval);
-      alert('Game Over! Your score: ' + score);
-      endGame();
-    }
-  });
+    const dinoRect = dino.getBoundingClientRect();
+    obstacles.forEach(obstacle => {
+        const obstacleRect = obstacle.getBoundingClientRect();
+        if (
+            dinoRect.bottom >= obstacleRect.top &&
+            dinoRect.top <= obstacleRect.bottom &&
+            dinoRect.right >= obstacleRect.left &&
+            dinoRect.left <= obstacleRect.right
+        ) {
+            clearInterval(interval);
+            clearInterval(obstacleInterval); // Очищаем интервал генерации препятствий
+            // alert('Game Over! Your score: ' + score);
+            endGame();
+        }
+    });
 }
 
 function endGame() {
-    gameWindow.style.display = 'none'; // Скрываем игровое окно
-    scoreDisplay.style.display = 'none'; // Скрываем счетчик
+    generatingObstacles = false; // Останавливаем генерацию препятствий
+    clearInterval(interval); // Останавливаем интервал обновления игры
+    clearInterval(obstacleInterval); // Останавливаем интервал генерации препятствий
+
+    // Удаляем все препятствия
+    obstacles.forEach(obstacle => obstacle.parentNode.removeChild(obstacle));
+    obstacles = [];
+
+    document.getElementById('resultDisplay').innerText = 'Game Over! Your score: ' + score; // Устанавливаем результат игры
+    document.getElementById('resultDisplay').style.display = 'block'; // Показываем элемент с результатом
+    // startButtonContainer.style.display = 'flex'; // Показываем кнопку начать игру
+    startButtonContainer.style.display = 'flex'; // Показываем кнопку начать игру
+    resetGame();
 }
+
+
+function resetGame() {
+    // Останавливаем все интервалы, связанные с препятствиями
+    obstacles.forEach(obstacle => clearInterval(obstacle.moveInterval));
   
+    // Удаляем все препятствия из DOM и массива obstacles
+    obstacles.forEach(obstacle => obstacle.parentNode.removeChild(obstacle));
+    obstacles = [];
+  
+    // Сбрасываем счетчик
+    score = 0;
+    scoreDisplay.innerText = score;
+  
+    // Перемещаем динозавра в исходное положение
+    dino.style.bottom = '0px';
+    dinoBottom = 0;
+}
+
 
 function incrementScore() {
   score++; // Увеличиваем счетчик
@@ -134,18 +205,11 @@ document.addEventListener('mousedown', event => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const startButton = document.getElementById('startButton');
-    const startButtonContainer = document.getElementById('startButtonContainer');
-    const gameWindow = document.getElementById('gameWindow');
-    const scoreDisplay = document.getElementById('score');
-  
-    startButton.addEventListener('click', function() {
-      startButtonContainer.style.display = 'none'; // Скрываем кнопку "Начать игру"
-      gameWindow.style.display = 'block'; // Отображаем игровое окно
-      scoreDisplay.style.display = 'block'; // Отображаем счетчик
-  
-      startGame(); // Запускаем игру
-    });
+startButton.addEventListener('click', function() {
+    startButtonContainer.style.display = 'none'; // Скрываем кнопку "Начать игру"
+    gameWindow.style.display = 'block'; // Отображаем игровое окно
+    scoreDisplay.style.display = 'block'; // Отображаем счетчик
+
+    resetGame();
+    startGame(); // Запускаем игру
   });
-  
